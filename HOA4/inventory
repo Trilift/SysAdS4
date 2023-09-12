@@ -1,0 +1,3 @@
+[cnodes]
+192.168.56.106	ansible_python_interpreter=/usr/bin/python
+192.168.56.107	ansible_python_interpreter=/usr/bin/python
