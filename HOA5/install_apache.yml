@@ -5,7 +5,7 @@
 
   - name: all in one por Ubuntu n CentOS
     package:
-      name: 
+      name:
         - "{{ apache_package }}"
         - "{{ php_package }}"
       state: latest

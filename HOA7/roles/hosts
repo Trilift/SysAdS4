@@ -34,6 +34,10 @@
 [file_servers]
 192.168.56.106
 
+[workstations]
+192.168.56.105
+192.168.56.106
+
 # If you have multiple hosts following a pattern you can specify
 # them like this:
 
