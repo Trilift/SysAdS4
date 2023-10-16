@@ -1,0 +1,95 @@
+---
+- name: dependencies (Ubuntu)
+  tags: ubuntu, nagios
+  apt:
+    name:
+      - autoconf
+      - libc6
+      - gcc
+      - make
+      - wget
+      - unzip
+      - apache2
+      - php
+      - libapache2-mod-php
+      - libgd-dev
+      - openssl
+      - libssl-dev
+      - bc
+      - gawk
+      - dc
+      - build-essential
+      - snmp
+      - libnet-snmp-perl
+      - gettext
+      - python3
+      - python3-pip
+    state: latest
+
+- name: passlib package (python)
+  pip:
+    name: passlib
+
+- name: setting nagios directory
+  file:
+    path: ~/nagios
+    state: directory
+
+- name: nagios
+  unarchive:
+    src: https://github.com/NagiosEnterprises/nagioscore/archive/nagios-4.4.6.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: plugins
+  unarchive:
+    src: https://github.com/nagios-plugins/nagios-plugins/archive/release-2.3.3.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: install with user grps
+  shell: |
+    cd ~/nagios/nagioscore-*
+    sudo ./configure --with-httpd-conf=/etc/apache2/sites-enabled
+    sudo make all
+    sudo make install-groups-users
+    sudo usermod -a -G nagios www-data
+    sudo make install
+    sudo make install-daemoninit
+    sudo make install-commandmode
+    sudo make install-config
+    sudo make install-webconf
+    sudo a2enmod rewrite
+    sudo a2enmod cgi
+
+- name: install plugins
+  shell: |
+    cd ~/nagios/nagios-plugins*
+    ./tools/setup
+    ./configure
+    make
+    make install
+
+- name: adding users
+  community.general.htpasswd:
+    path: /usr/local/nagios/etc/htpasswd.users
+    name: admin
+    password: admin
+
+- name: starting/restarting nagios
+  service:
+    name: nagios
+    state: restarted
+    enabled: true
+
+- name: starting/restarting apache
+  service:
+    name: apache2
+    state: restarted
+    enabled: true

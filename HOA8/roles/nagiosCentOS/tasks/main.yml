@@ -1,0 +1,93 @@
+- name: nagios dependecies and libraries
+  tags: nagios, centos
+  package:
+    name:
+      - gcc
+      - glibc
+      - glibc-common
+      - perl
+      - httpd
+      - php
+      - wget
+      - gd
+      - gd-devel
+      - openssl-devel
+      - gcc
+      - glibc
+      - glibc-common
+      - make
+      - gettext
+      - automake
+      - autoconf
+      - wget
+      - openssl-devel
+      - net-snmp
+      - net-snmp-utils
+      - python2-pip
+    state: latest
+
+- name: passlib (python)
+  pip:
+    name: passlib
+
+- name: setting directory
+  file:
+    path: ~/nagios
+    state: directory
+
+- name: Downloading and unziping nagios
+  unarchive:
+    src: https://github.com/NagiosEnterprises/nagioscore/archive/nagios-4.4.6.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: Compiling, installing, and adding users and groups in nagios
+  shell: |
+    cd ~/nagios/nagioscore-**
+    ./configure
+    make all
+    make install-groups-users
+    usermod -a -G nagios apache
+    make install
+    make install-daemoninit
+    make install-commandmode
+    make install-config
+    make install-webconf
+
+- name: Downloading and unziping plugins
+  unarchive:
+    src: https://github.com/nagios-plugins/nagios-plugins/archive/release-2.3.3.tar.gz
+    dest: ~/nagios
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: Compiling and installing plugins
+  shell: |
+    cd ~/nagios/nagios-plugins*
+    ./tools/setup
+    ./configure
+    make
+    make install
+
+- name: user management
+  community.general.htpasswd:
+    path: /usr/local/nagios/etc/htpasswd.users
+    name: admin
+    password: admin
+
+- name: starting/restarting nagios
+  service:
+    name: nagios
+    state: restarted
+    enabled: true
+
+- name: starting/restarting httpd
+  service:
+    name: httpd
+    state: restarted
+    enabled: true
