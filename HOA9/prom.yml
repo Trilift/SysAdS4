@@ -1,0 +1,35 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: epel-release download
+    yum:
+      name:
+        - epel-release
+    when: ansible_distribution == "CentOS"
+
+  - name: update centos
+    yum:
+      update_cache: yes
+      update_only: yes
+    when: ansible_distribution == "CentOS"
+
+  - name: update ubuntu
+    apt:
+      update_cache: yes
+      upgrade: dist
+    when: ansible_distribution == "Ubuntu"
+
+- hosts: ubuntu
+  become: true
+  roles:
+    - role: prometheusUbuntu
+      source: https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz
+
+- hosts: centos
+  become: true
+  roles:
+    - role: prometheusCentOS
+      source: https://github.com/prometheus/prometheus/releases/download/v2.39.1/prometheus-2.39.1.linux-amd64.tar.gz

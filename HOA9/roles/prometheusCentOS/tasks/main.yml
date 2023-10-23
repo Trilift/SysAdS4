@@ -1,0 +1,32 @@
+- name: prometheus directory
+  file:
+    path: ~/prometheus
+    state: directory
+
+- name: download & extract prometheus
+  unarchive:
+    src: "{{source}}"
+    dest: ~/prometheus
+    remote_src: yes
+    mode: 0777
+    owner: root
+    group: root
+
+- name: prometheus exec files
+  shell: |
+    cd ~/prometheus/prometheus*
+    cp -r . /usr/local/bin/prometheus
+
+- name: prometheus service file
+  copy:
+    src: prometheus.service
+    dest: /etc/systemd/system
+    mode: 777
+    owner: root
+    group: root
+
+- name: starting/restarting prometheus
+  service:
+    name: prometheus
+    state: restarted
+    enabled: true
