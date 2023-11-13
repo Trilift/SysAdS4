@@ -1,0 +1,7 @@
+---
+  docker_apps:
+    containerd: containerd.io_1.6.9-1_amd64
+    docker_ce_cli: docker-ce-cli_20.10.21~3-0~ubuntu-jammy_amd64
+    docker_ce: docker-ce_20.10.21~3-0~ubuntu-jammy_amd64
+    docker_compose: docker-compose-plugin_2.6.0~ubuntu-jammy_amd64
+

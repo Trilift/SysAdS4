@@ -1,0 +1,44 @@
+- name: Creating a directory for Dockerfile
+  file: 
+    path: /home/userver/docker_config
+    state: directory
+
+- name: Copying the Dockerfile 
+  copy:
+    src: dockerfile
+    dest: /home/userver/docker_config
+    owner: trilift
+    group: trilift
+
+- name: Creating volume 
+  file:
+    path: /home/userver/pages
+    state: directory
+
+- name: Building image
+  community.docker.docker_image:
+    name: lamp-userver
+    tag: 1.0
+    build:
+      path: /home/userver/docker_config
+    source: build
+
+- name: Deploying container
+  community.docker.docker_container:
+    name: lamp-userver
+    image: lamp-userver:1.0
+    state: started
+    exposed_ports:
+      - "80"
+    ports:
+      - "8080:80"
+    volumes:
+      - /home/userver/pages:/var/www/html
+
+- block:
+  - name: Verify if lamp-userver container is running
+    shell: docker ps
+    register: container_status
+
+  - debug: 
+      msg="{{ container_status }}"
