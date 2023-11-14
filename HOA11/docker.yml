@@ -16,4 +16,4 @@
 - hosts: ubuntu
   become: true
   roles:
-    - "../../dockerUbuntu"
+    - dockerUbuntu

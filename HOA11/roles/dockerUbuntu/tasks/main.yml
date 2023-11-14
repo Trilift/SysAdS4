@@ -1,2 +1,14 @@
-- import_tasks: install.yml
-- import_tasks: configure.yml
+
+- name: Copy dockerfile
+  ansible.builtin.copy:
+    src: /home/trilift/SysAdS4/HOA11/files/dockerfile
+    dest: /home/trilift/dockerfile
+    owner: trilift
+    group: docker
+    mode: '0600'
+
+- name: running dockerfile
+  shell: |
+    cd dockerfile
+    sudo docker build -t docker:11 .
+    docker run -it -d -p 8080:80 docker:11
