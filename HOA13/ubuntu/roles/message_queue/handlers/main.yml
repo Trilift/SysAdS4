@@ -1,0 +1,4 @@
+- name: Configuring rabbitmq-server
+  shell: |
+    rabbitmqctl add_user openstack triplelift27
+    rabbitmqctl set_permissions openstack ".*" ".*" ".*"

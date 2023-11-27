@@ -1,0 +1,42 @@
+- name: Copying openstack.cnf file
+  copy:
+    src: openstack.cnf
+    dest: /etc/my.cnf.d/openstack.cnf
+    owner: root
+    group: root
+    mode: 644
+
+  notify: Restarting database service
+
+- name: Starting and enabling mariadb.service
+  service:
+    name: mariadb.service
+    state: started
+    enabled: true
+
+- name: Adding MySQL service to the firewall
+  become: yes
+  become_user: root
+  command: "firewall-cmd --zone=public --add-service=mysql --permanent"
+
+- name: Reloading the firewall to apply changes
+  become: yes
+  become_user: root
+  command: "firewall-cmd --reload"
+
+
+- name: use "mysql_secure_installation" for Fresh MySQL Installation
+  mysql_secure_installation:
+    login_password: ''
+    new_password: "{{ root_password }}"
+    user: root
+    login_host: localhost
+    hosts: ['localhost', '127.0.0.1', '::1']
+    change_root_password: true
+    remove_anonymous_user: true
+    disallow_root_login_remotely: true
+    remove_test_db: true
+  register: secure
+
+- debug:
+        var: secure

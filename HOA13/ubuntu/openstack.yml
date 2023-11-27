@@ -1,0 +1,22 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks: 
+
+  - name: Updating and upgrading the operating system
+    apt:
+      name: "*"
+      state: latest
+      update_cache: true
+
+- hosts: controller_node 
+  become: true
+  roles:
+    - ntp
+    - database
+    - message_queue
+    - memcached
+    - etcd
+    - packages
+

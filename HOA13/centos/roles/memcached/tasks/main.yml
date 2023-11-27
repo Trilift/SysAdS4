@@ -1,0 +1,18 @@
+- import_tasks: install.yml
+- import_tasks: configure.yml
+
+- block:
+  - name: Verifying installation of memcached
+    command: memcached --version
+    register: memcached_version
+
+  - debug:
+       msg="{{ memcached_version }}"
+
+- block:
+  - name: Verifying if memcached is started and running in the background
+    command: systemctl status memcached
+    register: memcached_service
+
+  - debug:
+       msg="{{ memcached_service }}"

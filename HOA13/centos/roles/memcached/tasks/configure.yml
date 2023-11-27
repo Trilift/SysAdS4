@@ -1,0 +1,15 @@
+- name: editing memcached.conf file
+  copy:
+    src: memcached
+    dest: /etc/sysconfig/memcached
+    owner: root
+    group: root
+    mode: 644
+
+  notify: Restarting memcached
+
+- name: Starting memcached service
+  service:
+    name: memcached
+    state: started
+    enabled: true

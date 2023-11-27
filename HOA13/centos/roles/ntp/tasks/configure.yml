@@ -1,0 +1,25 @@
+- name: Editing chrony.conf file
+  copy:
+    src: chrony.conf
+    dest: /etc/chrony.conf
+    owner: root
+    group: root
+    mode: 644
+
+  notify: Restarting chrony
+
+- name: Adding firewall
+  ansible.builtin.pip:
+    name: firewall
+    state: latest
+  notify: Reload firewall
+
+- name: Adding NTP service to the firewall
+  become: yes
+  become_user: root
+  command: "firewall-cmd --zone=public --add-service=ntp --permanent"
+
+- name: Reloading the firewall to apply changes
+  become: yes
+  become_user: root
+  command: "firewall-cmd --reload"

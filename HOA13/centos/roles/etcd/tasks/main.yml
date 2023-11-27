@@ -1,0 +1,18 @@
+- import_tasks: install.yml
+- import_tasks: configure.yml
+
+- block:
+  - name: Verifying installation of etcd
+    command: etcd --version
+    register: etcd_version
+
+  - debug:
+      msg="{{ etcd_version }}"
+
+- block:
+  - name: Verifying if etcd is started and running in the background
+    command: systemctl status etcd
+    register: etcd_service
+
+  - debug:
+      msg="{{ etcd_service }}"

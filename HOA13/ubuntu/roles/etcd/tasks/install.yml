@@ -1,0 +1,80 @@
+
+- name: Creating etcd user
+  group:
+    name: etcd
+    system: true
+    state: present
+
+- name: Creating user for etcd
+  user:
+    name: etcd
+    home: "/var/lib/etcd"
+    shell: /bin/false
+    group: etcd
+    system: true
+
+- name: Creating /etc/etcd directory
+  file:
+    path: /etc/etcd
+    state: directory
+    owner: etcd
+    group: etcd
+
+- name: Creating /var/lib/etcd directory
+  file:
+    path: /var/lib/etcd
+    state: directory
+    owner: etcd
+    group: etcd
+
+- name: Installing etcd tarball for x86_64/amd64
+  shell: |
+    ETCD_VER=v3.2.7
+    rm -rf /tmp/etcd && mkdir -p /tmp/etcd
+    curl -L https://github.com/coreos/etcd/releases/download/${ETCD_VER}/etcd-${ETCD_VER}-linux-amd64.tar.gz -o /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz
+    tar xzvf /tmp/etcd-${ETCD_VER}-linux-amd64.tar.gz -C /tmp/etcd --strip-components=1
+    cp /tmp/etcd/etcd /usr/bin/etcd
+    cp /tmp/etcd/etcdctl /usr/bin/etcdctl
+
+- name: Creating a config file for etcd
+  copy: 
+    src: etcd.conf.yml
+    dest: /etc/etcd/etcd.conf.yml
+    owner: root
+    group: root
+    mode: 644
+
+- name: Copying the service file for etcd
+  copy: 
+    src: etcd.service
+    dest: /usr/lib/systemd/system/etcd.service
+    owner: root
+    group: root
+    mode: 644
+
+  notify: Reloading systemd service files
+
+- name: Starting and enabling service of etcd
+  service:
+    name: etcd
+    state: started
+    enabled: true
+
+- block:
+  - name: Verifying installation of etcd
+    command: etcd --version
+    register: etcd_version
+
+  - debug: 
+      msg="{{ etcd_version }}"
+
+- block:
+  - name: Verifying if etcd is started and running in the background
+    command: systemctl status etcd
+    register: etcd_service
+
+  - debug: 
+      msg="{{ etcd_service }}"
+
+
+

@@ -1,0 +1,19 @@
+
+- import_tasks: install.yml
+- import_tasks: configure.yml
+
+- block:
+  - name: Verifying installation of chrony
+    command: chronyd --version
+    register: chrony_version
+
+  - debug:
+      msg="{{ chrony_version }}"
+
+- block:
+  - name: Verifying if chronyd is started and running in the background
+    command: systemctl status chronyd
+    register: chrony_service
+
+  - debug:
+      msg="{{ chrony_service }}"

@@ -1,0 +1,9 @@
+- import_tasks: install.yml
+
+- block:
+  - name: Verifying rabbitmq-server installation
+    command: systemctl status rabbitmq-server
+    register: rabbitmq_service
+
+  - debug:
+      msg="{{ rabbitmq_service }}"

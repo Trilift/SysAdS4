@@ -1,0 +1,25 @@
+- name: Editing ifcfg-enp0s8
+  copy:
+    src: ifcfg-enp0s8
+    dest: /etc/sysconfig/network-scripts
+    owner: root
+    group: root
+    mode: 644
+  
+- name: Editing hosts
+  copy:
+    src: hosts 
+    dest: /etc
+    owner: root
+    group: root
+    mode: 644
+
+- name: Editing hostname
+  ansible.builtin.hostname:
+    name: controller
+    use: systemd
+
+#- name: Restarting network
+#  service: 
+#    name: network
+#    state: restarted

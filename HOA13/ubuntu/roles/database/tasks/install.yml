@@ -1,0 +1,43 @@
+- name: Installing database components
+  apt:
+    name:
+      - mariadb-client
+      - mariadb-server
+    state: present  # You can use 'state: present' to ensure the packages are installed
+
+- name: Installing python-PyMySQL
+  apt:
+    name: python3-pymysql
+    state: present
+
+- name: Copying openstack.cnf file
+  copy:
+    src: openstack.cnf
+    dest: /etc/my.cnf.d/openstack.cnf
+    owner: root
+    group: root
+    mode: 644
+
+  notify: Restarting database service
+
+- name: Starting and enabling database service
+  service:
+    name: mysql
+    state: started
+    enabled: true
+
+- block: 
+  - name: Verifying installation of mysql 
+    shell: mysql --version
+    register: mysql_version
+    
+  - debug: 
+      msg="{{ mysql_version }}"
+
+- block: 
+  - name: Verifying if mysql is started and running in the background 
+    shell: systemctl status mysql
+    register: mysql_service
+    
+  - debug: 
+      msg="{{ mysql_service }}"

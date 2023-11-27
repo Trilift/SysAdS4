@@ -1,0 +1,8 @@
+
+- name: Installing memcached
+  yum:
+    name:
+      - memcached
+      - python-memcached
+    state: latest
+

@@ -1,0 +1,29 @@
+
+- name: Installing rabbitmq-server
+  apt:
+    name: rabbitmq-server
+    state: latest
+
+- name: Starting service
+  service:
+    name: rabbitmq-server.service
+    state: started
+    enabled: true
+  
+  notify: Configuring rabbitmq-server
+
+- block:
+  - name: Verifying rabbitmq-server installation
+    command: rabbitmq-server --version
+    register: rabbitmq_version
+
+  - debug:
+      msg="{{ rabbitmq_version }}"
+
+- block:
+  - name: Verifying rabbitmq-server installation
+    command: sudo systemctl status rabbitmq-server
+    register: rabbitmq_service
+
+  - debug:
+      msg="{{ rabbitmq_service }}"

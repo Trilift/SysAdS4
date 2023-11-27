@@ -1,0 +1,24 @@
+- name: Enabling openstack repository
+  community.general.zypper_repository:
+    repo: 'obs://Cloud:OpenStack:Stein/openSUSE_Leap_15.0'
+    name: Stein
+    auto_import_keys: true 
+    runrefresh: true
+    
+
+- name: Refreshing the opensuse repository
+  apt:
+    update_cache: yes
+
+
+- name: Installing openstackclient
+  pip:    
+    name: python-openstackclient
+
+- block:
+  - name: Verifying installation of openstackclient
+    shell: openstack --version
+    register: openstack_version
+
+  - debug: 
+      msg="{{ openstack_version }}"

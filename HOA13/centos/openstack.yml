@@ -1,0 +1,20 @@
+---
+
+- hosts: all
+  become: true
+  pre_tasks:
+
+  - name: Updating the repository
+    yum:
+      update_cache: true
+
+- hosts: controller_node
+  become: true
+  roles:
+    - network
+    - ntp
+    - packages
+    - database
+    - message_queue
+    - memcached
+    - etcd

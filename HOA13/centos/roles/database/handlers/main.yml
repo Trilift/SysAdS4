@@ -1,0 +1,8 @@
+- name: Restarting database service
+  service:
+    name: mariadb
+    state: restarted
+    enabled: true
+
+- name: Reloading firewall
+  command: firewall-cmd --reload

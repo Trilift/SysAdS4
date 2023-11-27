@@ -1,0 +1,8 @@
+- name: Installing etcd
+  yum:
+    name:
+      - etcd
+    state: latest
+
+
+

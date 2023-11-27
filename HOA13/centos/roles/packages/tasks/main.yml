@@ -1,0 +1,9 @@
+- import_tasks: install.yml
+
+- block:
+  - name: Verifying installation of openstackclient
+    shell: openstack --version
+    register: openstack_version
+
+  - debug:
+      msg="{{ openstack_version }}"

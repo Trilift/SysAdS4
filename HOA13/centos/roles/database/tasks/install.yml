@@ -1,0 +1,6 @@
+- name: Installing database components
+  yum:
+    name:
+      - mariadb
+      - mariadb-server
+      - python2-PyMySQL

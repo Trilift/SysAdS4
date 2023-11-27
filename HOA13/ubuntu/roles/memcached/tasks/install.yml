@@ -1,0 +1,47 @@
+
+- name: Installing memcached
+  apt:
+    name: 
+      - memcached 
+      - python3-memcache
+    state: latest
+
+- name: Ensure /etc/sysconfig directory exists
+  file:
+    path: /etc/sysconfig
+    state: directory
+    owner: root
+    group: root
+    mode: 0755
+
+- name: Editing memcached.conf file
+  copy:
+    src: memcached
+    dest: /etc/sysconfig/memcached
+    owner: root
+    group: root
+    mode: 644
+  
+  notify: Restarting memcached
+
+- name: Starting memcached service
+  service:
+    name: memcached 
+    state: started
+    enabled: true
+
+- block:
+  - name: Verifying installation of memcached
+    command: memcached --version
+    register: memcached_version
+
+  - debug:
+       msg="{{ memcached_version }}"
+
+- block:
+  - name: Verifying if memcached is started and running in the background
+    command: systemctl status memcached
+    register: memcached_service
+
+  - debug:
+       msg="{{ memcached_service }}"

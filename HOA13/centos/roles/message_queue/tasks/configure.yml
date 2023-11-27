@@ -1,0 +1,13 @@
+- name: Adding 11211 port to firewall
+  ansible.posix.firewalld:
+    port: 11211/tcp
+    permanent: yes
+
+  notify: Reloading firewall
+
+- name: Adding 5672 port to firewall
+ansible.posix.firewalld:
+  port: 5672/tcp
+  permanent: yes
+
+  notify: Reloading firewall

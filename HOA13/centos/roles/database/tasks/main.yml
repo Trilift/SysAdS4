@@ -1,0 +1,18 @@
+- import_tasks: install.yml
+- import_tasks: configure.yml
+
+- block:
+  - name: Verifying installation of mysql
+    shell: mysql --version
+    register: mysql_version
+
+  - debug:
+      msg="{{ mysql_version }}"
+
+- block:
+  - name: Verifying if mysql is started and running in the background
+    shell: systemctl status mysql
+    register: mysql_service
+
+  - debug:
+      msg="{{ mysql_service }}"
