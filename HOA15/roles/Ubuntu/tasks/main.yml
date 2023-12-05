@@ -1,0 +1,73 @@
+#Neutron
+
+    - name: Install Neutron packages
+      apt:
+        name:
+          - neutron-server
+          - neutron-plugin-ml2
+          - neutron-linuxbridge-agent
+          - neutron-l3-agent
+          - neutron-dhcp-agent
+          - neutron-metadata-agent
+        state: present
+
+    - name: Configure Neutron
+      template:
+        src: neutron.conf.j2
+        dest: /etc/neutron/neutron.conf
+
+    - name: Configure ML2 plugin
+      template:
+        src: ml2_conf.ini.j2
+        dest: /etc/neutron/plugins/ml2/ml2_conf.ini
+
+    - name: Restart Neutron
+      service:
+        name: neutron-server
+        state: restarted
+
+# Horizon
+    - name: Install Horizon packages
+      apt:
+        name:
+          - openstack-dashboard
+        state: present
+
+    - name: Configure Apache for Horizon
+      template:
+        src: openstack-dashboard.conf.j2
+        dest: /etc/apache2/sites-available/openstack-dashboard.conf
+
+    - name: Configure Horizon settings
+      template:
+        src: local_settings.py.j2
+        dest: /etc/openstack-dashboard/local_settings.py
+
+    - name: Restart Apache
+      service:
+        name: apache2
+        state: restarted
+
+# Cinder
+
+    - name: Install Cinder packages
+      apt:
+        name:
+          - cinder-api
+          - cinder-scheduler
+          - cinder-volume
+        state: present
+
+    - name: Configure Cinder
+      template:
+        src: cinder.conf.j2
+        dest: /etc/cinder/cinder.conf
+
+    - name: Create Cinder database
+      command: cinder-manage db sync
+      become_user: cinder
+
+    - name: Restart Cinder
+      service:
+        name: cinder-volume
+        state: restarted

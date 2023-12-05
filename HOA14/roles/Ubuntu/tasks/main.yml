@@ -1,0 +1,254 @@
+# Keystone
+- name: Installing Keystone (Ubuntu)
+  apt:
+    name: keystone
+    state: latest
+
+- name: Configuring Config File
+  lineinfile:
+    dest: /etc/keystone/keystone.conf
+    insertafter: '\[database\]'
+    regexp: 'connection = mysql+pymysql://keystone:KEYSTONE_DBPASS@controller/keystone'
+    line: 'connection = mysql+pymysql://keystone:admin123@controller/keystone'
+    backup: yes
+    backrefs: yes
+
+- name: Configuring Config File
+  lineinfile:
+    dest: /etc/keystone/keystone.conf
+    insertafter: '\[token\]'
+    line: 'provider = fernet'
+    backup: yes
+
+- name: Populating the Database
+  shell:
+    sudo keystone-manage db_sync
+
+- name: Initialize Fernet Key
+  shell:
+    keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+
+- name: Initialize Fernet Key
+  shell:
+     keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
+
+- name: Configuring the Apache (HTTP) Server
+  lineinfile:
+    dest: /etc/apache2/apache2.conf
+    line: 'ServerName controller'
+    state: present
+    backup: yes
+
+- name: Configure Administrative Account Environmental Variables
+  shell:
+    export OS_USERNAME=admin
+    export OS_PASSWORD=ADMIN_PASS
+    export OS_PROJECT_NAME=admin
+    export OS_USER_DOMANI_NAME=Default
+    export OS_PROJECT_DOMAIN_NAME=Default
+    export OS_AUTH_URL=http://controller:5000/v3
+    export OS_IDENTITY_API_VERSION=3
+
+# Glance
+
+- name: Install Glance (Ubuntu)
+  apt:
+    name:
+      - glance
+    state: latest
+
+- name: Configure Glance database
+  replace:
+    dest: /etc/glance/glance-api.conf
+    regexp: connection = mysql+pymysql://glance:GLANCE_DBPASS@controller/glance
+    replace: connection = mysql+pymysql://glance:admin123@controller/glance
+    backup: yes
+
+- name: Configure Glance Authentication Key
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[keystone_authtoken\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+
+  with_items:
+    - www_authenticate_uri = http://controller:5000
+    - auth_url = http://controller:5000
+    - memcached_servers = controller:11211
+    - auth_type = password
+    - project_domain_name = Default
+    - user_domain_name = Default
+    - project_name = service
+    - username = glance
+    - password = admin123
+
+- name: Configure Glance paste_deploy
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[paste_deploy\]'
+    line: 'flavor = keystone'
+    backup: yes
+
+- name: COnfigure Glance glance_store
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[glance_store\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+
+  with_items:
+    - stores = file,http
+    - default_store = file
+    - filesystem_store_datadir = /var/lib/glance/images/
+
+- name: Configure Glance oslo_limit
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[oslo_limit\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+
+  with_items:
+    - auth_url = http://controller:5000
+    - auth_type = password
+    - user_domain_id = default
+    - username = MY_SERVICE
+    - system_scope = all
+    - password = MY_PASSWORD
+    - endpoint_id = ENDPOINT_ID
+    - region_name = RegionOne
+
+- name: Configure Glance DEFAULT
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[DEFAULT\]'
+    line: 'use_keystone_limits = True'
+    backup: yes
+
+- name: Populating Image Service Database
+  shell:
+    sudo glance-manage db_sync
+
+# Nova
+
+- name: Installing Nova (Ubuntu)
+  apt:
+    name:
+      - nova-api
+      - nova-conductor
+      - nova-novncproxy
+      - nova-scheduler
+    state: latest
+
+- name: Configuring Nova API
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    regexp: connection = mysql+pymysql://nova:NOVA_DBPASS@controller/nova_api
+    line: connection = mysql+pymysql://nova:admin123@controller/nova_api
+    backup: yes
+    backrefs: yes
+
+- name: Configure Nova API
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    insertafter: '\[api\]'
+    line: 'auth_strategy = keystone'
+    state: present
+    backup: yes
+
+- name: Configuring Nova Database
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    regexp: mysql+pymysql://nova:NOVA_DBPASS@controller/nova
+    line: mysql+pymysql://nova:admin123@controller/nova
+    backup: yes
+    backrefs: yes
+
+- name: Configure Nova Authentication Token (for Keystone)
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[keystone_authtoken\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+  with_items:
+    - www_authenticate_uri = http://controller:5000/
+    - auth_url = http://controller:5000/
+    - memcached_servers = controller:11211
+    - auth_type = password
+    - project_domain_name = Default
+    - user_domain_name = Default
+    - project_name = service
+    - username = nova
+    - password = admin123
+
+- name: Configure Nova VNC
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[vnc\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+
+  with_items:
+    - enabled = true
+    - server_listen = $my_ip
+    - server_proxyclient_address = $my_ip
+
+- name: Configure Nova placement
+  lineinfile:
+    dest: /etc/glance/glance-api.conf
+    insertafter: '\[placement\]'
+    line: "{{ item }}"
+    state: present
+    backup: yes
+
+  with_items:
+    - region_name = RegionOne
+    - project_domain_name = Default
+    - project_name = service
+    - auth_type = password
+    - user_domain_name = Default
+    - auth_url = http://controller:5000/v3
+    - username = placement
+    - password = admin123
+
+- name: Configure Nova Default
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    line: 'my_ip = 10.0.0.11'
+    state: present
+    backup: yes
+
+- name: Configure Nova Glance
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    line: 'api_server = http://controller:9292'
+    state: present
+    backup: yes
+
+- name: Configure Nova olso_concurrency
+  lineinfile:
+    dest: /etc/nova/nova.conf
+    line: 'lock_path = /var/lib/nova/tmp'
+    state: present
+    backup: yes
+
+- name: Additional Configuration of Nova
+  shell:
+    sudo nova-manage api_db sync
+
+- name: Additional Configuration
+  shell:
+    sudo nova-manage cell_v2 map_cell0
+
+- name: Additional Configuration
+  shell:
+    sudo nova-manage db sync
+
+- name: Additional Configuration
+  shell:
+    sudo nova-manage cell_v2 list_cells

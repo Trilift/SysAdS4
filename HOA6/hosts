@@ -24,15 +24,15 @@
 #192.168.1.110
 
 [web_servers]
-192.168.56.105
+#192.168.56.105
 192.168.56.107
 
 [db_servers]
-192.168.56.106
+#192.168.56.106
 192.168.56.107
 
 [file_servers]
-192.168.56.106
+#192.168.56.106
 
 # If you have multiple hosts following a pattern you can specify
 # them like this:

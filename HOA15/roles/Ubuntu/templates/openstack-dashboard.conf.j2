@@ -1,0 +1,15 @@
+<VirtualHost *:80>
+  ServerName your_horizon_server_domain_or_ip
+
+  WSGIDaemonProcess horizon user=www-data group=www-data processes=3 threads=10 home=/usr/share/openstack-dashboard display-name=%{GROUP}
+  WSGIProcessGroup horizon
+  WSGIScriptAlias / /usr/share/openstack-dashboard/openstack_dashboard/wsgi/django.wsgi
+  WSGIPassAuthorization On
+
+  <IfModule mod_ssl.c>
+    SSLEngine Off
+  </IfModule>
+
+  ErrorLog ${APACHE_LOG_DIR}/horizon_error.log
+  CustomLog ${APACHE_LOG_DIR}/horizon_access.log combined
+</VirtualHost>
